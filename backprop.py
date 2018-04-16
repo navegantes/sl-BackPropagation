@@ -31,7 +31,8 @@ class sl_BackProp:
         
     def readData(self):
         self.filepath = askopenfilename(parent=root, title="Choose data set!").__str__()
-        self.Data = 
+        file = open('self.filepath','r')
+        self.Data = file.readlines()
 
     def normalize(self):
         pass
