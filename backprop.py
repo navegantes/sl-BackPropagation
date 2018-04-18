@@ -57,6 +57,7 @@ class sl_BackProp:
         self.outNet = 1. / (1 + np.exp(out))
 
         err = self.output - self.outNet
+        
 
     def runet(self):
         pass
