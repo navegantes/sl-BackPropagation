@@ -48,8 +48,6 @@ class sl_BackProp:
         #[ln. for ln in strm1]
         inData = np.zeros([4, len(strm1)-1])
         output = np.zeros([1, len(strm1)-1])
-        #print self.inData[:,0]
-        # print strm1[0].split(',')[0:3]
 
         for ln in range(len(strm1)-1):
             inData[:, ln] = np.array( [float(i) for i in strm1[ln].split(',')])[0:4]
@@ -58,7 +56,7 @@ class sl_BackProp:
         file.close()
         return [inData, output]
 
-    def normalize(self):
+    def normalize(self, indata):
         pass
 
     def trainet(self):
@@ -77,12 +75,12 @@ class sl_BackProp:
 
         err = self.output - self.outLayer
 
-        # Backward direction
+        # BACKWARD DIRECTION
         #Output layer gradient
-        oGrad = err*self.outLayer*(1-self.outLayer)
+        self.Grad[1] = err*self.outLayer*(1-self.outLayer)
 
         #Updating weigths
-        self.dW[1] = self.coefLearn*oGrad*self.hLayer
+        self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
 
         #Hidden layer gradient
         #hGrad = 
