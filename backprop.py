@@ -50,8 +50,9 @@ class sl_BackProp:
         output = np.zeros([1, len(strm1)-1])
 
         for ln in range(len(strm1)-1):
-            inData[:, ln] = np.array( [float(i) for i in strm1[ln].split(',')])[0:4]
-            output[0][ln] = np.array( [float(i) for i in strm1[ln].split(',')])[-1]
+            smp = np.array( [float(i) for i in strm1[ln].split(',')])
+            inData[:, ln] = smp[0:4] #np.array( [float(i) for i in strm1[ln].split(',')])[0:4]
+            output[0][ln] = smp[-1] #np.array( [float(i) for i in strm1[ln].split(',')])[-1]
 
         file.close()
         return [inData, output]
