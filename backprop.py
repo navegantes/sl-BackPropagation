@@ -4,9 +4,9 @@ Created on Mon Apr 16 11:43:37 2018
 @author: Navegantes
 """
 
-import numpy as np
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
+import numpy as np
 
 root = Tk()
 root.withdraw()
@@ -29,7 +29,7 @@ class sl_BackProp:
         #self.bias =
 
         self.coefLearn = coefLearn
-        self.IW = [ np.random.rand(self.n_Input, self.nNeurons), np.random.rand(self.nNeurons, self.n_Output) ]
+        self.IW = [np.random.rand(self.n_Input, self.nNeurons), np.random.rand(self.nNeurons, self.n_Output)]
         self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
         self.Grad = [ np.zeros([1, self.nNeurons]), np.zeros([1, self.n_Output]) ]
 
@@ -40,6 +40,9 @@ class sl_BackProp:
         self.inData, self.output = self.readData()
 
     def readData(self):
+        """
+        doc strig
+        """
 
         self.filepath = askopenfilename(parent=root, title="Choose data set!").__str__()
         file = open(self.filepath,'r')
