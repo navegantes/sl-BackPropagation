@@ -61,6 +61,10 @@ class sl_BackProp:
         return [inData, output]
 
     def normalize(self, indata):
+        
+        Xmin = 
+        maxd = 
+        out = (Xi-Xmin)*(Lmax - Lmin)/
         pass
 
     def trainet(self):
