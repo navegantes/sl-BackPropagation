@@ -60,12 +60,19 @@ class sl_BackProp:
         file.close()
         return [inData, output]
 
-    def normalize(self, indata):
-        
-        Xmin = 
-        maxd = 
-        out = (Xi-Xmin)*(Lmax - Lmin)/
-        pass
+    def normalize(self, indata, limits=(0, 1)):
+        """
+        inData: numpy.array
+        """
+
+        Lmin = float(limits[0])
+        Lmax = float(limits[1])
+        Xmin = np.min(indata)
+        Xmax = np.max(indata)
+
+        normData = limits[0] + ((indata-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
+
+        return normData
 
     def trainet(self):
         
