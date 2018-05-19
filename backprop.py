@@ -7,6 +7,7 @@ Created on Mon Apr 16 11:43:37 2018
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
 import numpy as np
+import matplotlib.pyplot as plt
 
 root = Tk()
 root.withdraw()
@@ -29,6 +30,8 @@ class sl_BackProp:
         #self.bias =
 
         self.coefLearn = coefLearn
+        self.error = list()
+        self.sqrError = np.zeros(self.nEpochs)
 
         self.initWeigths()
         # self.IW = [np.random.rand(self.n_Input, self.nNeurons), np.random.rand(self.nNeurons, self.n_Output)]
@@ -102,38 +105,61 @@ class sl_BackProp:
         pass
 
     def trainet(self):
-        
+        """
+        """
+        print "\nTrainning net ..."
         for nEp in range(self.nEpochs):
             for smp in range(self.inData.shape[1]):
-            # Forward direction
-            # H0 = np.zeros(self.nNeurons)
-            # for i in range(self.nNeurons):
-            #     H0[i] = np.sum( self.inLayer*self.Weigths[0][:,i] ) # + bias
+                
+                # H0 = np.zeros(self.nNeurons)
+                # for i in range(self.nNeurons):
+                #     H0[i] = np.sum( self.inLayer*self.Weigths[0][:,i] ) # + bias
             
+                # FORWARD DIRECTION
+                # Outputs hidden layer
                 # H0 = np.dot(self.inLayer, self.IW[0]) + self.bias[0]
                 H0 = np.dot(self.inData[:, smp], self.IW[0]) + self.bias[0]
-
                 self.hLayer = 1. / (1 + np.exp(-1*H0))
-
+                
+                # Outputs outlayers
                 out = np.dot(self.hLayer, self.IW[1]) + self.bias[1]
                 self.outLayer = 1. / (1 + np.exp(-1*out))
 
-                err = self.output - self.outLayer
+                err = 0.5*np.sum((self.output - self.outLayer)**2)
+                # Square error
+                self.error.append(err)
 
                 # BACKWARD DIRECTION
-                #Output layer gradient
+                # Output layer gradient
                 self.Grad[1] = err*self.outLayer*(1-self.outLayer)
+                dbias = self.coefLearn*self.Grad[1]
 
-                #Updating weigths
+                # Updating out weigths
                 self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
-                self.IW[1] += self.dW 
+                self.IW[1] += self.dW[1]
+                self.bias[1] += dbias 
 
-                #Hidden layer gradient
-                soma = self.IW[1].*self.Grad[1]
-                self.Grad[0] = (self.hLayer.*(1-self.hLayer)).* soma
+                # Hidden layer gradient
+                h1 = self.IW[1]*self.Grad[1]
+                self.Grad[0] = (self.hLayer*(1-self.hLayer))*h1
+                dbias = self.coefLearn*self.Grad[0]
 
-                self.dW[0] = self.coefLearn*self.Grad[0]*Xn(:, smp)';
-                dbias{1,1} = lrnRt*(1)*grad{1,1};
+                # Updating weigths
+                self.dW[0] = self.coefLearn*self.Grad[0]*self.inData[:, smp]
+                self.bias[0] = self.coefLearn*(1.)*self.Grad[0]
+                # dbias{1,1} = lrnRt*(1)*grad{1,1};
+
+                self.IW[0] += self.dW[0]
+            #end smp
+            # sqrerr = np.sum(np.array(self.error))/self.inData.shape[1]
+            self.sqrError[nEp] = np.sum(np.array(self.error))/self.inData.shape[1]
+
+            plt.plot(self.sqrError)
+            plt.show()
+            plt.pause(0.05)
+        # End epochs
+
+
 
 
     def runet(self):
