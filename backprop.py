@@ -19,7 +19,7 @@ class sl_BackProp:
 
         self.n_Input  = n_input
         self.n_Output = n_output
-        self.nEpochs  = 100
+        self.nEpochs  = 10
         #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
@@ -29,15 +29,38 @@ class sl_BackProp:
         #self.bias =
 
         self.coefLearn = coefLearn
-        self.IW = [np.random.rand(self.n_Input, self.nNeurons), np.random.rand(self.nNeurons, self.n_Output)]
-        self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
-        self.Grad = [ np.zeros([1, self.nNeurons]), np.zeros([1, self.n_Output]) ]
+
+        self.initWeigths()
+        # self.IW = [np.random.rand(self.n_Input, self.nNeurons), np.random.rand(self.nNeurons, self.n_Output)]
+        # self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
+        # self.Grad = [ np.zeros([1, self.nNeurons]), np.zeros([1, self.n_Output]) ]
+        # self.bias = []
 
         activation = {'linear':0, 'sigmoid':1, 'hipertan':2, 'arctan':3}
         self.actFunc = activation[actFunc]
 
         self.filepath = ''
         self.inData, self.output = self.readData()
+
+        self.inLayer = self.normalize(self.inData)
+
+    def initWeigths(self):
+        """
+        """
+
+        print "\nInitializing weigths and bias ...."
+
+        lmt = (-1, 1)
+
+        self.IW = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Input, self.nNeurons), \
+                    lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons, self.n_Output)]
+        self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
+
+        self.bias = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons, 1), \
+                    lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Output, 1) ]
+
+        self.Grad = [ np.zeros([1, self.nNeurons]), np.zeros([1, self.n_Output]) ]
+        
 
     def readData(self):
         """
@@ -64,41 +87,53 @@ class sl_BackProp:
         """
         inData: numpy.array
         """
-
+        # for i in 
         Lmin = float(limits[0])
         Lmax = float(limits[1])
         Xmin = np.min(indata)
         Xmax = np.max(indata)
 
+        #norData = float(limits[0]) + ((indata-np.min(indata))*(float(limits[1]) - float(limits[0])))/(np.max(indata)-np.min(indata))
         normData = limits[0] + ((indata-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
 
         return normData
 
+    def transFunc(self):
+        pass
+
     def trainet(self):
         
-        # Forward direction
-        # H0 = np.zeros(self.nNeurons)
-        # for i in range(self.nNeurons):
-        #     H0[i] = np.sum( self.inLayer*self.Weigths[0][:,i] ) # + bias
+        for nEp in range(self.nEpochs):
+            for smp in range(self.inData.shape[1]):
+            # Forward direction
+            # H0 = np.zeros(self.nNeurons)
+            # for i in range(self.nNeurons):
+            #     H0[i] = np.sum( self.inLayer*self.Weigths[0][:,i] ) # + bias
+            
+                # H0 = np.dot(self.inLayer, self.IW[0]) + self.bias[0]
+                H0 = np.dot(self.inData[:, smp], self.IW[0]) + self.bias[0]
 
-        H0 = np.dot(self.inLayer, self.IW[0]) #+ bias[0]
+                self.hLayer = 1. / (1 + np.exp(-1*H0))
 
-        self.hLayer = 1. / (1 + np.exp(-1*H0))
+                out = np.dot(self.hLayer, self.IW[1]) + self.bias[1]
+                self.outLayer = 1. / (1 + np.exp(-1*out))
 
-        out = np.dot(self.hLayer, self.IW[1]) #+ bias[1]
-        self.outLayer = 1. / (1 + np.exp(-1*out))
+                err = self.output - self.outLayer
 
-        err = self.output - self.outLayer
+                # BACKWARD DIRECTION
+                #Output layer gradient
+                self.Grad[1] = err*self.outLayer*(1-self.outLayer)
 
-        # BACKWARD DIRECTION
-        #Output layer gradient
-        self.Grad[1] = err*self.outLayer*(1-self.outLayer)
+                #Updating weigths
+                self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
+                self.IW[1] += self.dW 
 
-        #Updating weigths
-        self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
+                #Hidden layer gradient
+                soma = self.IW[1].*self.Grad[1]
+                self.Grad[0] = (self.hLayer.*(1-self.hLayer)).* soma
 
-        #Hidden layer gradient
-        #hGrad = 
+                self.dW[0] = self.coefLearn*self.Grad[0]*Xn(:, smp)';
+                dbias{1,1} = lrnRt*(1)*grad{1,1};
 
 
     def runet(self):
