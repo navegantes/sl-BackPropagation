@@ -4,8 +4,11 @@ Created on Mon Apr 16 11:43:37 2018
 @author: Navegantes
 """
 
+from __future__ import print_function
 from Tkinter import Tk
+#from tkinter import Tk
 from tkFileDialog import askopenfilename
+#from tkinter.filedialog import askopenfilename
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -33,14 +36,11 @@ class sl_BackProp:
         self.error = list()
         self.sqrError = list() #np.zeros(self.nEpochs)
 
+        # Initialize weigths, bias and grad
         self.initWeigths()
-        # self.IW = [np.random.rand(self.n_Input, self.nNeurons), np.random.rand(self.nNeurons, self.n_Output)]
-        # self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
-        # self.Grad = [ np.zeros([1, self.nNeurons]), np.zeros([1, self.n_Output]) ]
-        # self.bias = []
 
-        activation = {'linear':0, 'sigmoid':1, 'hipertan':2, 'arctan':3}
-        self.actFunc = activation[actFunc]
+        # activation = {'linear':0, 'sigmoid':1, 'hipertan':2, 'arctan':3}
+        # self.actFunc = activation[actFunc]
 
         self.filepath = ''
         self.inData, self.output = self.readData()
@@ -51,7 +51,7 @@ class sl_BackProp:
         """
         """
 
-        print "\nInitializing weigths and bias ...."
+        print("\nInitializing weigths and bias ....")
 
         lmt = (-1, 1)
 
@@ -103,9 +103,6 @@ class sl_BackProp:
             normData[i,:] = limits[0] + ((indata[i,:]-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
 
         return normData
-        
-    def multiply(self, A, B):
-        pass
 
     def transFunc(self):
         pass
@@ -113,13 +110,14 @@ class sl_BackProp:
     def trainet(self):
         """
         """
-        print "\nTrainning net ..."
+        g = list()
+        
+        print("Trainning net ...")
         for nEp in range(self.nEpochs):
             for smp in range(self.inData.shape[1]):
                 
                 # FORWARD DIRECTION
                 # Outputs hidden layer
-                # H0 = np.dot(self.inLayer, self.IW[0]) + self.bias[0]
                 H0 = np.dot(self.inLayer[:, smp], self.IW[0]) + self.bias[0]
                 self.hLayer = 1. / (1 + np.exp(-1*H0))
                 
@@ -134,30 +132,34 @@ class sl_BackProp:
                 # BACKWARD DIRECTION
                 # Output layer gradient
                 self.Grad[1] = err*self.outLayer*(1-self.outLayer)
-#                dbias = self.coefLearn*self.Grad[1]
+                g.append(self.Grad[1])
 
                 # Updating out weigths
                 self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
-                self.IW[1] = (self.IW[1].T + self.dW[1]).T
                 self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0] 
-
+#                self.IW[1] = (self.IW[1].T + self.dW[1]).T
+                
                 # Hidden layer gradient
                 h1 = self.IW[1]*self.Grad[1]
                 self.Grad[0] = (self.hLayer*(1-self.hLayer))*h1.T
-#                dbias = self.coefLearn*self.Grad[0]
 
                 # Update hidden weigths
-                self.dW[0] = self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0])
-
-                self.IW[0] += self.dW[0]
+#                 self.dW[0] = self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0])
+                self.IW[1] = (self.IW[1].T + self.dW[1]).T
+                self.IW[0] += self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0]) #self.dW[0]
                 self.bias[0] += (self.coefLearn*self.Grad[0])[0] #dbias[0]
             #end smp
+                
             # sqrerr = np.sum(np.array(self.error))/self.inData.shape[1]
             self.sqrError.append(np.sum(self.error)/self.inData.shape[1])
             self.error = list()
-
+            
+#             plt.plot(g)
+#             plt.show()
+#             plt.pause(0.01)
+            
             plt.plot(list(self.sqrError))
-            plt.show()
+            plt.draw()
             plt.pause(0.01)
         # End epochs
 
@@ -166,6 +168,6 @@ class sl_BackProp:
 
 if __name__ == "__main__":
     
-    net = sl_BackProp(n_input=4, n_neuron=5, n_output=1, coefLearn=0.01)
+    net = sl_BackProp(n_input=4, n_neuron=10, n_output=1, coefLearn=0.2)
     net.trainet()
     
