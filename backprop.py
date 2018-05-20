@@ -16,11 +16,11 @@ class sl_BackProp:
     '''
     '''
 
-    def __init__(self, n_input = 1, n_neuron = 1, n_output = 1, actFunc='sigmoid', coefLearn = 0.01 ):
+    def __init__(self, n_input = 1, n_neuron = 1, n_output = 1, actFunc='sigmoid', coefLearn = 0.05 ):
 
         self.n_Input  = n_input
         self.n_Output = n_output
-        self.nEpochs  = 10
+        self.nEpochs  = 100
         #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
@@ -31,7 +31,7 @@ class sl_BackProp:
 
         self.coefLearn = coefLearn
         self.error = list()
-        self.sqrError = np.zeros(self.nEpochs)
+        self.sqrError = list() #np.zeros(self.nEpochs)
 
         self.initWeigths()
         # self.IW = [np.random.rand(self.n_Input, self.nNeurons), np.random.rand(self.nNeurons, self.n_Output)]
@@ -55,14 +55,14 @@ class sl_BackProp:
 
         lmt = (-1, 1)
 
-        self.IW = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Input, self.nNeurons), \
-                    lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons, self.n_Output)]
+        self.IW = [ lmt[0] + (lmt[1]-lmt[0])*np.random.rand(self.n_Input, self.nNeurons), \
+                    lmt[0] + (lmt[1]-lmt[0])*np.random.rand(self.nNeurons, self.n_Output)]
         self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
 
-        self.bias = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons, 1), \
-                    lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Output, 1) ]
+        self.bias = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons), \
+                    lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Output) ]
 
-        self.Grad = [ np.zeros([1, self.nNeurons]), np.zeros([1, self.n_Output]) ]
+        self.Grad = [ np.zeros(self.nNeurons), np.zeros(self.n_Output) ]
         
 
     def readData(self):
@@ -90,16 +90,22 @@ class sl_BackProp:
         """
         inData: numpy.array
         """
-        # for i in 
-        Lmin = float(limits[0])
-        Lmax = float(limits[1])
-        Xmin = np.min(indata)
-        Xmax = np.max(indata)
-
-        #norData = float(limits[0]) + ((indata-np.min(indata))*(float(limits[1]) - float(limits[0])))/(np.max(indata)-np.min(indata))
-        normData = limits[0] + ((indata-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
+        numIn = indata.shape[0]
+        normData = np.zeros([numIn, indata.shape[1]])
+        
+        for i in range(numIn):
+            Lmin = float(limits[0])
+            Lmax = float(limits[1])
+            Xmin = np.min(indata[i,:])
+            Xmax = np.max(indata[i,:])
+    
+            #norData = float(limits[0]) + ((indata-np.min(indata))*(float(limits[1]) - float(limits[0])))/(np.max(indata)-np.min(indata))
+            normData[i,:] = limits[0] + ((indata[i,:]-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
 
         return normData
+        
+    def multiply(self, A, B):
+        pass
 
     def transFunc(self):
         pass
@@ -111,60 +117,55 @@ class sl_BackProp:
         for nEp in range(self.nEpochs):
             for smp in range(self.inData.shape[1]):
                 
-                # H0 = np.zeros(self.nNeurons)
-                # for i in range(self.nNeurons):
-                #     H0[i] = np.sum( self.inLayer*self.Weigths[0][:,i] ) # + bias
-            
                 # FORWARD DIRECTION
                 # Outputs hidden layer
                 # H0 = np.dot(self.inLayer, self.IW[0]) + self.bias[0]
-                H0 = np.dot(self.inData[:, smp], self.IW[0]) + self.bias[0]
+                H0 = np.dot(self.inLayer[:, smp], self.IW[0]) + self.bias[0]
                 self.hLayer = 1. / (1 + np.exp(-1*H0))
                 
                 # Outputs outlayers
                 out = np.dot(self.hLayer, self.IW[1]) + self.bias[1]
                 self.outLayer = 1. / (1 + np.exp(-1*out))
 
-                err = 0.5*np.sum((self.output - self.outLayer)**2)
+                err = self.output[0][smp] - self.outLayer
                 # Square error
-                self.error.append(err)
+                self.error.append(0.5*np.sum(err**2))
 
                 # BACKWARD DIRECTION
                 # Output layer gradient
                 self.Grad[1] = err*self.outLayer*(1-self.outLayer)
-                dbias = self.coefLearn*self.Grad[1]
+#                dbias = self.coefLearn*self.Grad[1]
 
                 # Updating out weigths
                 self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
-                self.IW[1] += self.dW[1]
-                self.bias[1] += dbias 
+                self.IW[1] = (self.IW[1].T + self.dW[1]).T
+                self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0] 
 
                 # Hidden layer gradient
                 h1 = self.IW[1]*self.Grad[1]
-                self.Grad[0] = (self.hLayer*(1-self.hLayer))*h1
-                dbias = self.coefLearn*self.Grad[0]
+                self.Grad[0] = (self.hLayer*(1-self.hLayer))*h1.T
+#                dbias = self.coefLearn*self.Grad[0]
 
-                # Updating weigths
-                self.dW[0] = self.coefLearn*self.Grad[0]*self.inData[:, smp]
-                self.bias[0] = self.coefLearn*(1.)*self.Grad[0]
-                # dbias{1,1} = lrnRt*(1)*grad{1,1};
+                # Update hidden weigths
+                self.dW[0] = self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0])
 
                 self.IW[0] += self.dW[0]
+                self.bias[0] += (self.coefLearn*self.Grad[0])[0] #dbias[0]
             #end smp
             # sqrerr = np.sum(np.array(self.error))/self.inData.shape[1]
-            self.sqrError[nEp] = np.sum(np.array(self.error))/self.inData.shape[1]
+            self.sqrError.append(np.sum(self.error)/self.inData.shape[1])
+            self.error = list()
 
-            plt.plot(self.sqrError)
+            plt.plot(list(self.sqrError))
             plt.show()
-            plt.pause(0.05)
+            plt.pause(0.01)
         # End epochs
-
-
-
 
     def runet(self):
         pass
 
 if __name__ == "__main__":
     
-    net = sl_BackProp(n_input=4, n_neuron=5, n_output=3)
+    net = sl_BackProp(n_input=4, n_neuron=5, n_output=1, coefLearn=0.01)
+    net.trainet()
+    
