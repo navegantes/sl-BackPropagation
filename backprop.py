@@ -5,10 +5,10 @@ Created on Mon Apr 16 11:43:37 2018
 """
 
 from __future__ import print_function
-from Tkinter import Tk
-from tkFileDialog import askopenfilename
-#from tkinter import Tk
-#from tkinter.filedialog import askopenfilename
+# from Tkinter import Tk
+# from tkFileDialog import askopenfilename
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 import numpy as np
 import matplotlib.pyplot as plt
 
