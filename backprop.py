@@ -168,7 +168,7 @@ class sl_BackProp:
 
 if __name__ == "__main__":
 
-    net = sl_BackProp(n_input=4, n_neuron=20, n_output=1, coefLearn=0.3)
+    net = sl_BackProp(n_input=4, n_neuron=10, n_output=1, coefLearn=0.3)
     net.trainet()
     # net.runet()
 
