@@ -153,10 +153,6 @@ class sl_BackProp:
             self.MSE.append(np.sum(self.error)/self.inData.shape[1])
             self.error = list()
 
-            #plt.plot(list(self.MSE))
-            #plt.hold(True)
-            #plt.pause(0.01)
-
         # End epochs
         plt.plot(list(self.MSE))
         plt.grid()
