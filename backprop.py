@@ -23,7 +23,7 @@ class sl_BackProp:
 
         self.n_Input  = n_input
         self.n_Output = n_output
-        self.nEpochs  = 200
+        self.nEpochs  = 100
         #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
@@ -62,7 +62,7 @@ class sl_BackProp:
                     lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Output) ]
 
         self.Grad = [ np.zeros(self.nNeurons), np.zeros(self.n_Output) ]
-        
+
 
     def readData(self):
         """
@@ -71,6 +71,7 @@ class sl_BackProp:
 
         self.filepath = askopenfilename(parent=root, title="Choose data set!").__str__()
         file = open(self.filepath,'r')
+        root.destroy()
         #stream = file.read()
         strm1 = file.read().split('\n')
         #[ln. for ln in strm1]
@@ -91,13 +92,13 @@ class sl_BackProp:
         """
         numIn = indata.shape[0]
         normData = np.zeros([numIn, indata.shape[1]])
-        
+
         for i in range(numIn):
             Lmin = float(limits[0])
             Lmax = float(limits[1])
             Xmin = np.min(indata[i,:])
             Xmax = np.max(indata[i,:])
-    
+
             #norData = float(limits[0]) + ((indata-np.min(indata))*(float(limits[1]) - float(limits[0])))/(np.max(indata)-np.min(indata))
             normData[i,:] = limits[0] + ((indata[i,:]-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
 
@@ -110,16 +111,16 @@ class sl_BackProp:
         """
         """
         g = list()
-        
+
         print("Trainning net ...")
         for nEp in range(self.nEpochs):
             for smp in range(self.inData.shape[1]):
-                
+
                 # FORWARD DIRECTION
                 # Outputs hidden layer
                 H0 = np.dot(self.inLayer[:, smp], self.IW[0]) + self.bias[0]
                 self.hLayer = 1. / (1 + np.exp(-1*H0))
-                
+
                 # Outputs outlayers
                 out = np.dot(self.hLayer, self.IW[1]) + self.bias[1]
                 self.outLayer = 1. / (1 + np.exp(-1*out))
@@ -136,9 +137,9 @@ class sl_BackProp:
                 # Updating out weigths
                 self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
                 self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0]
-                self.IW[1] = (self.IW[1].T + self.dW[1]).T 
+                self.IW[1] = (self.IW[1].T + self.dW[1]).T
 #                self.IW[1] = (self.IW[1].T + self.dW[1]).T
-                
+
                 # Hidden layer gradient
                 h1 = self.IW[1]*self.Grad[1]
                 self.Grad[0] = (self.hLayer*(1-self.hLayer))*h1.T
@@ -147,27 +148,28 @@ class sl_BackProp:
                 self.IW[0] += self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0]) #self.dW[0]
                 self.bias[0] += (self.coefLearn*self.Grad[0])[0] #dbias[0]
             #end smp
-                
+
             # sqrerr = np.sum(np.array(self.error))/self.inData.shape[1]
             self.MSE.append(np.sum(self.error)/self.inData.shape[1])
             self.error = list()
-            
-            plt.plot(list(self.MSE))
-            plt.draw()
-            plt.pause(0.01)
-            
+
+            #plt.plot(list(self.MSE))
+            #plt.hold(True)
+            #plt.pause(0.01)
+
         # End epochs
+        plt.plot(list(self.MSE))
         plt.grid()
         plt.show()
+        
 
     def runet(self):
         pass
 
 if __name__ == "__main__":
-    
-    net = sl_BackProp(n_input=4, n_neuron=20, n_output=1, coefLearn=0.1)
+
+    net = sl_BackProp(n_input=4, n_neuron=20, n_output=1, coefLearn=0.3)
     net.trainet()
     # net.runet()
 
     print(" = MSE: ", net.MSE[-1])
-    
