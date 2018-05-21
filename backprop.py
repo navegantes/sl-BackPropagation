@@ -6,8 +6,8 @@ Created on Mon Apr 16 11:43:37 2018
 
 from __future__ import print_function
 from Tkinter import Tk
-#from tkinter import Tk
 from tkFileDialog import askopenfilename
+#from tkinter import Tk
 #from tkinter.filedialog import askopenfilename
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,18 +23,17 @@ class sl_BackProp:
 
         self.n_Input  = n_input
         self.n_Output = n_output
-        self.nEpochs  = 100
+        self.nEpochs  = 200
         #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
         self.nNeurons = n_neuron
         self.hLayer  = np.zeros(self.nNeurons)
         self.outLayer = np.zeros(self.n_Output)
-        #self.bias =
 
         self.coefLearn = coefLearn
         self.error = list()
-        self.sqrError = list() #np.zeros(self.nEpochs)
+        self.MSE = list() #np.zeros(self.nEpochs)
 
         # Initialize weigths, bias and grad
         self.initWeigths()
@@ -136,7 +135,8 @@ class sl_BackProp:
 
                 # Updating out weigths
                 self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
-                self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0] 
+                self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0]
+                self.IW[1] = (self.IW[1].T + self.dW[1]).T 
 #                self.IW[1] = (self.IW[1].T + self.dW[1]).T
                 
                 # Hidden layer gradient
@@ -144,30 +144,30 @@ class sl_BackProp:
                 self.Grad[0] = (self.hLayer*(1-self.hLayer))*h1.T
 
                 # Update hidden weigths
-#                 self.dW[0] = self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0])
-                self.IW[1] = (self.IW[1].T + self.dW[1]).T
                 self.IW[0] += self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0]) #self.dW[0]
                 self.bias[0] += (self.coefLearn*self.Grad[0])[0] #dbias[0]
             #end smp
                 
             # sqrerr = np.sum(np.array(self.error))/self.inData.shape[1]
-            self.sqrError.append(np.sum(self.error)/self.inData.shape[1])
+            self.MSE.append(np.sum(self.error)/self.inData.shape[1])
             self.error = list()
             
-#             plt.plot(g)
-#             plt.show()
-#             plt.pause(0.01)
-            
-            plt.plot(list(self.sqrError))
+            plt.plot(list(self.MSE))
             plt.draw()
             plt.pause(0.01)
+            
         # End epochs
+        plt.grid()
+        plt.show()
 
     def runet(self):
         pass
 
 if __name__ == "__main__":
     
-    net = sl_BackProp(n_input=4, n_neuron=10, n_output=1, coefLearn=0.2)
+    net = sl_BackProp(n_input=4, n_neuron=20, n_output=1, coefLearn=0.1)
     net.trainet()
+    # net.runet()
+
+    print(" = MSE: ", net.MSE[-1])
     
