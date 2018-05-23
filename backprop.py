@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 root = Tk()
 root.withdraw()
 
-class sl_BackProp:
+class slp_BackProp:
     '''
     '''
 
@@ -23,7 +23,7 @@ class sl_BackProp:
 
         self.n_Input  = n_input
         self.n_Output = n_output
-        self.nEpochs  = 100
+        self.nEpochs  = 500
         #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
@@ -45,13 +45,15 @@ class sl_BackProp:
         self.inData, self.output = self.readData()
 
         self.inLayer = self.normalize(self.inData)
+        self.output = self.normalize(self.output)
+
+        # self.tData = self.splitdata()
 
     def initWeigths(self):
         """
         """
 
-        print("\nInitializing weigths and bias ....")
-
+        print(" > Initializing weigths and bias ....")
         lmt = (-1, 1)
 
         self.IW = [ lmt[0] + (lmt[1]-lmt[0])*np.random.rand(self.n_Input, self.nNeurons), \
@@ -69,9 +71,11 @@ class sl_BackProp:
         doc strig
         """
 
+        print(" > Choosing dataset ...")
         self.filepath = askopenfilename(parent=root, title="Choose data set!").__str__()
         file = open(self.filepath,'r')
         root.destroy()
+        print("    > Reading data ...")
         #stream = file.read()
         strm1 = file.read().split('\n')
         #[ln. for ln in strm1]
@@ -84,12 +88,14 @@ class sl_BackProp:
             output[0][ln] = smp[-1] #np.array( [float(i) for i in strm1[ln].split(',')])[-1]
 
         file.close()
+        print("    > Reading complete ...")
         return [inData, output]
 
     def normalize(self, indata, limits=(0, 1)):
         """
         inData: numpy.array
         """
+        print(" > Normalizing data ...")
         numIn = indata.shape[0]
         normData = np.zeros([numIn, indata.shape[1]])
 
@@ -112,7 +118,7 @@ class sl_BackProp:
         """
         g = list()
 
-        print("Trainning net ...")
+        print(" > Trainning net ...")
         for nEp in range(self.nEpochs):
             for smp in range(self.inData.shape[1]):
 
@@ -153,6 +159,7 @@ class sl_BackProp:
             self.MSE.append(np.sum(self.error)/self.inData.shape[1])
             self.error = list()
 
+        print(" > Show evolution error ...")
         # End epochs
         plt.plot(list(self.MSE))
         plt.grid()
@@ -160,11 +167,27 @@ class sl_BackProp:
         
 
     def runet(self):
+        """
         pass
+        """
+
+        for smp in range(self.inData.shape[1]):
+            
+            # FORWARD DIRECTION
+            # Outputs hidden layer
+            H0 = np.dot(self.inLayer[:, smp], self.IW[0]) + self.bias[0]
+            self.hLayer = 1. / (1 + np.exp(-1*H0))
+
+            # Outputs outlayers
+            out = np.dot(self.hLayer, self.IW[1]) + self.bias[1]
+            self.outLayer = 1. / (1 + np.exp(-1*out))
 
 if __name__ == "__main__":
 
-    net = sl_BackProp(n_input=4, n_neuron=10, n_output=1, coefLearn=0.3)
+    print("\n")
+    print("### A simple SLP implementation ###")
+    n_in, n_n, n_out, coef = 4, 5, 1, 0.3
+    net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
     net.trainet()
     # net.runet()
 
