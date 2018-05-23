@@ -213,8 +213,9 @@ if __name__ == "__main__":
     print("\n")
     print("### A simple SLP implementation ###")
     n_in, n_n, n_out, coef = 4, 5, 1, 0.5
+    
     net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
     net.trainet()
     # net.runet()
 
-    print(" = MSE: ", net.MSE[-1])
+    print(" = MSE: %.3e \n" % net.MSE[-1])
