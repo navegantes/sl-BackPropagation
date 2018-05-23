@@ -20,10 +20,18 @@ class slp_BackProp:
     '''
 
     def __init__(self, n_input = 1, n_neuron = 1, n_output = 1, actFunc='sigmoid', coefLearn = 0.05 ):
-
+        """
+        docstring here
+            :param self: 
+            :param n_input=1: 
+            :param n_neuron=1: 
+            :param n_output=1: 
+            :param actFunc='sigmoid': 
+            :param coefLearn=0.05: 
+        """
         self.n_Input  = n_input
         self.n_Output = n_output
-        self.nEpochs  = 500
+        self.nEpochs  = 200
         #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
@@ -51,6 +59,8 @@ class slp_BackProp:
 
     def initWeigths(self):
         """
+        docstring here
+            :param self: 
         """
 
         print(" > Initializing weigths and bias ....")
@@ -93,8 +103,12 @@ class slp_BackProp:
 
     def normalize(self, indata, limits=(0, 1)):
         """
-        inData: numpy.array
-        """
+        docstring here
+            :param self: 
+            :param indata: 
+            :param limits=(0: 
+            :param 1: 
+        """   
         print(" > Normalizing data ...")
         numIn = indata.shape[0]
         normData = np.zeros([numIn, indata.shape[1]])
@@ -117,6 +131,11 @@ class slp_BackProp:
         """
         """
         g = list()
+
+        # print(" > Plotting error evolution ...")
+        plt.subplot(2,1,1)
+        plt.xlabel('Number of Epochs')
+        plt.ylabel('Mean Square Error')
 
         print(" > Trainning net ...")
         for nEp in range(self.nEpochs):
@@ -159,9 +178,16 @@ class slp_BackProp:
             self.MSE.append(np.sum(self.error)/self.inData.shape[1])
             self.error = list()
 
-        print(" > Show evolution error ...")
+            # plt.plot(list(self.MSE), "b-")
+            # plt.draw()
+            # plt.pause(0.001)
+            
+        # print(" > Show evolution error ...")
         # End epochs
         plt.plot(list(self.MSE))
+        plt.title("MSE: %.3e " % self.MSE[-1])
+        # plt.xlabel('Number of Epochs')
+        # plt.ylabel('Mean Square Error')
         plt.grid()
         plt.show()
         
@@ -186,7 +212,7 @@ if __name__ == "__main__":
 
     print("\n")
     print("### A simple SLP implementation ###")
-    n_in, n_n, n_out, coef = 4, 5, 1, 0.3
+    n_in, n_n, n_out, coef = 4, 5, 1, 0.5
     net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
     net.trainet()
     # net.runet()
