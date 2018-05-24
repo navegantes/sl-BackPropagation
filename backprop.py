@@ -28,7 +28,7 @@ class slp_BackProp:
             :param n_output=1: 
             :param actFunc='sigmoid': 
             :param coefLearn=0.05: 
-        """
+        """   
         self.n_Input  = n_input
         self.n_Output = n_output
         self.nEpochs  = 200
