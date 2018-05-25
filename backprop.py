@@ -5,8 +5,6 @@ Created on Mon Apr 16 11:43:37 2018
 """
 
 from __future__ import print_function
-# from Tkinter import Tk
-# from tkFileDialog import askopenfilename
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import numpy as np
@@ -33,7 +31,6 @@ class slp_BackProp:
         self.n_Input  = n_input
         self.n_Output = n_output
         self.nEpochs  = 500
-        #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
         self.nNeurons = n_neuron
@@ -42,13 +39,10 @@ class slp_BackProp:
 
         self.coefLearn = coefLearn
         self.error = list()
-        self.MSE = list() #np.zeros(self.nEpochs)
+        self.MSE = list()
 
         # Initialize weigths, bias and grad
         self.initWeigths()
-
-        # activation = {'linear':0, 'sigmoid':1, 'hipertan':2, 'arctan':3}
-        # self.actFunc = activation[actFunc]
 
         self.filepath = ''
         self.inData, self.classData = self.readData()
@@ -111,8 +105,6 @@ class slp_BackProp:
             :param limits: 
         """   
 
-        print(" > Normalizing data ...")
-
         numIn = indata.shape[0]
         normData = np.zeros([numIn, indata.shape[1]])
 
@@ -121,10 +113,8 @@ class slp_BackProp:
             Lmax = float(limits[1])
             Xmin = np.min(indata[i,:])
             Xmax = np.max(indata[i,:])
-            #norData = float(limits[0]) + ((indata-np.min(indata))*(float(limits[1]) - float(limits[0])))/(np.max(indata)-np.min(indata))
             normData[i,:] = limits[0] + ((indata[i,:]-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
         # End for
-
         return normData
     #END DEF
 
@@ -191,14 +181,13 @@ class slp_BackProp:
                 self.IW[0] += self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0])
                 self.bias[0] += (self.coefLearn*self.Grad[0])[0] #dbias[0]
             #end smp
-
             self.MSE.append(np.sum(self.error)/self.inLayer.shape[1])
             self.error = list()
             
         print("   > Show evolution error ...")
         # End epochs
         
-    def simulate(self, inLayer):
+    def simNet(self, inLayer):
         """
         pass
         """
@@ -228,8 +217,10 @@ def runSLP():
     
     net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
     net.trainet()
+    print(" MSE: %.3e" % net.MSE[-1])
 
-    pred = net.normalize(np.array([net.simulate(net.dataSet[0][1])]), limits=(1,3))
+    pred = net.simNet(net.dataSet[0][1])
+    pred = net.normalize(np.array([pred]), limits=(1,3))
     orig = net.normalize(np.array([net.dataSet[1][1]]), limits=(1,3))
 
     plt.figure(1)
