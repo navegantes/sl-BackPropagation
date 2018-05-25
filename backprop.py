@@ -28,7 +28,8 @@ class slp_BackProp:
             :param n_output=1: 
             :param actFunc='sigmoid': 
             :param coefLearn=0.05: 
-        """   
+        """
+        
         self.n_Input  = n_input
         self.n_Output = n_output
         self.nEpochs  = 200
@@ -50,13 +51,17 @@ class slp_BackProp:
         # self.actFunc = activation[actFunc]
 
         self.filepath = ''
-        self.inData, self.output = self.readData()
+        self.inData, self.classData = self.readData()
 
-        self.inLayer = self.normalize(self.inData)
-        self.output = self.normalize(self.output)
+        # self.inLayer = self.normalize(self.inData)
+        # self.output = self.normalize(self.classData)
 
-        # self.tData = self.splitdata()
+        inData, classData = self.splitData( self.normalize(self.inData), \
+                            self.normalize(self.classData))
 
+        self.inLayer = inData[0]
+        self.output  = classData[0]
+        
     def initWeigths(self):
         """
         docstring here
@@ -72,9 +77,8 @@ class slp_BackProp:
 
         self.bias = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons), \
                     lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Output) ]
-
         self.Grad = [ np.zeros(self.nNeurons), np.zeros(self.n_Output) ]
-
+    #END DEF
 
     def readData(self):
         """
@@ -96,33 +100,62 @@ class slp_BackProp:
             smp = np.array( [float(i) for i in strm1[ln].split(',')])
             inData[:, ln] = smp[0:4] #np.array( [float(i) for i in strm1[ln].split(',')])[0:4]
             output[0][ln] = smp[-1] #np.array( [float(i) for i in strm1[ln].split(',')])[-1]
-
+        
         file.close()
         print("    > Reading complete ...")
+
         return [inData, output]
+    #END DEF
 
     def normalize(self, indata, limits=(0, 1)):
         """
         docstring here
             :param self: 
             :param indata: 
-            :param limits=(0: 
-            :param 1: 
+            :param limits: 
         """   
+
         print(" > Normalizing data ...")
+
         numIn = indata.shape[0]
         normData = np.zeros([numIn, indata.shape[1]])
+        # normData = np.zeros(indata.shape)
 
         for i in range(numIn):
             Lmin = float(limits[0])
             Lmax = float(limits[1])
             Xmin = np.min(indata[i,:])
             Xmax = np.max(indata[i,:])
-
             #norData = float(limits[0]) + ((indata-np.min(indata))*(float(limits[1]) - float(limits[0])))/(np.max(indata)-np.min(indata))
             normData[i,:] = limits[0] + ((indata[i,:]-Xmin)*(Lmax - Lmin))/(Xmax-Xmin)
+        # End for
 
         return normData
+    #END DEF
+
+    def splitData(self, inData, output):
+        """
+        docstring here
+            :param self: 
+            :param inData: 
+            :param output: 
+        """   
+
+        # Splitting in validation and test set
+        valSet = np.append( inData[:, 0:45], np.append(inData[:,50:95], inData[:, 100:145], axis=1), axis=1)
+        testSet  = np.append( inData[:, 45:50], np.append(inData[:, 95:100], inData[:, 145:150], axis=1), axis=1)
+        outVal  = np.append(output[0][0:45], np.append(output[0][50:95], output[0][100:145]))
+        ouTest  = np.append(output[0][45:50], np.append(output[0][95:100], output[0][145:150]))
+        # print(outVal)
+        # print(ouTest)
+
+        inData = [valSet, testSet]
+        output = [outVal, ouTest]
+
+        # print("\n >> OUTPUT reading <<")
+        # print(output[0].shape)
+        return inData, output
+
 
     def transFunc(self):
         pass
@@ -139,7 +172,7 @@ class slp_BackProp:
 
         print(" > Trainning net ...")
         for nEp in range(self.nEpochs):
-            for smp in range(self.inData.shape[1]):
+            for smp in range(self.inLayer.shape[1]):
 
                 # FORWARD DIRECTION
                 # Outputs hidden layer
@@ -150,7 +183,8 @@ class slp_BackProp:
                 out = np.dot(self.hLayer, self.IW[1]) + self.bias[1]
                 self.outLayer = 1. / (1 + np.exp(-1*out))
 
-                err = self.output[0][smp] - self.outLayer
+                # err = self.output[0][smp] - self.outLayer
+                err = self.output[smp] - self.outLayer
                 # Square error
                 self.error.append(0.5*np.sum(err**2))
 
@@ -175,14 +209,14 @@ class slp_BackProp:
             #end smp
 
             # sqrerr = np.sum(np.array(self.error))/self.inData.shape[1]
-            self.MSE.append(np.sum(self.error)/self.inData.shape[1])
+            self.MSE.append(np.sum(self.error)/self.inLayer.shape[1])
             self.error = list()
 
             # plt.plot(list(self.MSE), "b-")
             # plt.draw()
             # plt.pause(0.001)
             
-        # print(" > Show evolution error ...")
+        print("   > Show evolution error ...")
         # End epochs
         plt.plot(list(self.MSE))
         plt.title("MSE: %.3e " % self.MSE[-1])
@@ -197,7 +231,7 @@ class slp_BackProp:
         pass
         """
 
-        for smp in range(self.inData.shape[1]):
+        for smp in range(self.inData[0].shape[1]):
             
             # FORWARD DIRECTION
             # Outputs hidden layer
@@ -212,6 +246,8 @@ if __name__ == "__main__":
 
     print("\n")
     print("### A simple SLP implementation ###")
+    print("  ### Single Layer Perceptron ###\n")
+
     n_in, n_n, n_out, coef = 4, 5, 1, 0.5
     
     net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
