@@ -58,8 +58,6 @@ class slp_BackProp:
 
         self.inLayer = self.dataSet[0][0]
         self.output  = self.dataSet[1][0]
-
-        # self.predClass = self.runet()
         
     def initWeigths(self):
         """
@@ -72,7 +70,6 @@ class slp_BackProp:
 
         self.IW = [ lmt[0] + (lmt[1]-lmt[0])*np.random.rand(self.n_Input, self.nNeurons), \
                     lmt[0] + (lmt[1]-lmt[0])*np.random.rand(self.nNeurons, self.n_Output)]
-        # self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
 
         self.bias = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons), \
                     lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Output) ]
@@ -118,7 +115,6 @@ class slp_BackProp:
 
         numIn = indata.shape[0]
         normData = np.zeros([numIn, indata.shape[1]])
-        # normData = np.zeros(indata.shape)
 
         for i in range(numIn):
             Lmin = float(limits[0])
@@ -159,13 +155,8 @@ class slp_BackProp:
         """
         """
 
-        g = list()
-        # print(" > Plotting error evolution ...")
-        plt.figure(1) #subplot(2,1,1)
-        plt.xlabel('Number of Epochs')
-        plt.ylabel('Mean Square Error')
-
         print(" > Trainning net ...")
+        g = list()
 
         for nEp in range(self.nEpochs):
             for smp in range(self.inLayer.shape[1]):
@@ -188,16 +179,16 @@ class slp_BackProp:
                 self.Grad[1] = err*self.outLayer*(1-self.outLayer)
                 g.append(self.Grad[1])
 
-                # Updating out weigths                # self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
+                # Updating out weigths
                 self.IW[1] = (self.IW[1].T + self.coefLearn*self.Grad[1]*self.hLayer).T
-                self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0]                # self.IW[1] = (self.IW[1].T + self.dW[1]).T
+                self.bias[1] += self.coefLearn*self.Grad[1]
 
                 # Hidden layer gradient
                 h1 = self.IW[1]*self.Grad[1]
                 self.Grad[0] = (self.hLayer*(1-self.hLayer))*h1.T
 
                 # Update hidden weigths
-                self.IW[0] += self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0]) #self.dW[0]
+                self.IW[0] += self.coefLearn*np.outer(self.inLayer[:, smp], self.Grad[0])
                 self.bias[0] += (self.coefLearn*self.Grad[0])[0] #dbias[0]
             #end smp
 
@@ -206,10 +197,6 @@ class slp_BackProp:
             
         print("   > Show evolution error ...")
         # End epochs
-        plt.plot(list(self.MSE))
-        plt.title("MSE: %.3e " % self.MSE[-1])
-        plt.grid()
-        # plt.show()
         
     def simulate(self, inLayer):
         """
@@ -228,7 +215,6 @@ class slp_BackProp:
             out = np.dot(hLayer, self.IW[1]) + self.bias[1]
             outLayer = 1. / (1 + np.exp(-1*out))
             predClass = np.append(predClass, outLayer)
-            # predClass.append(outLayer)
 
         return predClass
 
@@ -242,34 +228,25 @@ def runSLP():
     
     net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
     net.trainet()
+
     pred = net.normalize(np.array([net.simulate(net.dataSet[0][1])]), limits=(1,3))
-    # print(np.round(pred))
-    
     orig = net.normalize(np.array([net.dataSet[1][1]]), limits=(1,3))
-    # print(orig)
+
+    plt.figure(1)
+    plt.xlabel('Number of Epochs')
+    plt.ylabel('Mean Square Error')
+    plt.plot(list(net.MSE))
+    plt.title("MSE: %.3e " % net.MSE[-1])
+    plt.grid()
 
     plt.figure(2)
+    plt.plot(np.zeros(15)+1.5, "b--")
+    plt.plot(np.zeros(15)+2.5, "b--")
     plt.plot(orig[0], "bo")
     plt.plot(pred[0], "r*")
     plt.grid()
     plt.show()
 
-    # print(" = MSE: %.3e \n" % net.MSE[-1])
-
 if __name__ == "__main__":
     
     runSLP()
-    
-    # print("\n")
-    # print("### A simple SLP implementation ###")
-    # print("  ### Single Layer Perceptron ###\n")
-
-    # n_in, n_n, n_out, coef = 4, 5, 1, 0.5
-    
-    # net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
-    # tnet = net.trainet()
-    # pred = net.runet(net.dataSet[0][1])
-    # print(pred)
-    # print(net.dataSet[1][1])
-
-    # print(" = MSE: %.3e \n" % net.MSE[-1])
