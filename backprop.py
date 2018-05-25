@@ -32,7 +32,7 @@ class slp_BackProp:
         
         self.n_Input  = n_input
         self.n_Output = n_output
-        self.nEpochs  = 200
+        self.nEpochs  = 500
         #self.n_HiddenLayers = n_Hlayer
 
         self.inLayer  = np.zeros(self.n_Input)
@@ -53,14 +53,13 @@ class slp_BackProp:
         self.filepath = ''
         self.inData, self.classData = self.readData()
 
-        # self.inLayer = self.normalize(self.inData)
-        # self.output = self.normalize(self.classData)
-
-        inData, classData = self.splitData( self.normalize(self.inData), \
+        self.dataSet = self.splitData( self.normalize(self.inData), \
                             self.normalize(self.classData))
 
-        self.inLayer = inData[0]
-        self.output  = classData[0]
+        self.inLayer = self.dataSet[0][0]
+        self.output  = self.dataSet[1][0]
+
+        # self.predClass = self.runet()
         
     def initWeigths(self):
         """
@@ -73,7 +72,7 @@ class slp_BackProp:
 
         self.IW = [ lmt[0] + (lmt[1]-lmt[0])*np.random.rand(self.n_Input, self.nNeurons), \
                     lmt[0] + (lmt[1]-lmt[0])*np.random.rand(self.nNeurons, self.n_Output)]
-        self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
+        # self.dW = [ np.zeros([self.n_Input, self.nNeurons]), np.zeros([self.nNeurons, self.n_Output]) ]
 
         self.bias = [ lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.nNeurons), \
                     lmt[0]+(lmt[1]-lmt[0])*np.random.rand(self.n_Output) ]
@@ -90,9 +89,9 @@ class slp_BackProp:
         file = open(self.filepath,'r')
         root.destroy()
         print("    > Reading data ...")
-        #stream = file.read()
+        
         strm1 = file.read().split('\n')
-        #[ln. for ln in strm1]
+        
         inData = np.zeros([4, len(strm1)-1])
         output = np.zeros([1, len(strm1)-1])
 
@@ -141,21 +140,17 @@ class slp_BackProp:
             :param output: 
         """   
 
+        print(" > Splitting data ...")
         # Splitting in validation and test set
         valSet = np.append( inData[:, 0:45], np.append(inData[:,50:95], inData[:, 100:145], axis=1), axis=1)
         testSet  = np.append( inData[:, 45:50], np.append(inData[:, 95:100], inData[:, 145:150], axis=1), axis=1)
         outVal  = np.append(output[0][0:45], np.append(output[0][50:95], output[0][100:145]))
-        ouTest  = np.append(output[0][45:50], np.append(output[0][95:100], output[0][145:150]))
-        # print(outVal)
-        # print(ouTest)
+        ouTest  = np.append(output[0][45:50], np.append(output[0][95:100], output[0][145:150]))        # outVal  = np.append(output[0:45], np.append(output[50:95], output[100:145]))        # ouTest  = np.append(output[45:50], np.append(output[95:100], output[145:150]))
 
         inData = [valSet, testSet]
         output = [outVal, ouTest]
 
-        # print("\n >> OUTPUT reading <<")
-        # print(output[0].shape)
-        return inData, output
-
+        return (inData, output)
 
     def transFunc(self):
         pass
@@ -163,17 +158,17 @@ class slp_BackProp:
     def trainet(self):
         """
         """
-        g = list()
 
+        g = list()
         # print(" > Plotting error evolution ...")
-        plt.subplot(2,1,1)
+        plt.figure(1) #subplot(2,1,1)
         plt.xlabel('Number of Epochs')
         plt.ylabel('Mean Square Error')
 
         print(" > Trainning net ...")
+
         for nEp in range(self.nEpochs):
             for smp in range(self.inLayer.shape[1]):
-
                 # FORWARD DIRECTION
                 # Outputs hidden layer
                 H0 = np.dot(self.inLayer[:, smp], self.IW[0]) + self.bias[0]
@@ -193,11 +188,9 @@ class slp_BackProp:
                 self.Grad[1] = err*self.outLayer*(1-self.outLayer)
                 g.append(self.Grad[1])
 
-                # Updating out weigths
-                self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
-                self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0]
-                self.IW[1] = (self.IW[1].T + self.dW[1]).T
-#                self.IW[1] = (self.IW[1].T + self.dW[1]).T
+                # Updating out weigths                # self.dW[1] = self.coefLearn*self.Grad[1]*self.hLayer
+                self.IW[1] = (self.IW[1].T + self.coefLearn*self.Grad[1]*self.hLayer).T
+                self.bias[1] += self.coefLearn*self.Grad[1] #dbias[0]                # self.IW[1] = (self.IW[1].T + self.dW[1]).T
 
                 # Hidden layer gradient
                 h1 = self.IW[1]*self.Grad[1]
@@ -208,50 +201,75 @@ class slp_BackProp:
                 self.bias[0] += (self.coefLearn*self.Grad[0])[0] #dbias[0]
             #end smp
 
-            # sqrerr = np.sum(np.array(self.error))/self.inData.shape[1]
             self.MSE.append(np.sum(self.error)/self.inLayer.shape[1])
             self.error = list()
-
-            # plt.plot(list(self.MSE), "b-")
-            # plt.draw()
-            # plt.pause(0.001)
             
         print("   > Show evolution error ...")
         # End epochs
         plt.plot(list(self.MSE))
         plt.title("MSE: %.3e " % self.MSE[-1])
-        # plt.xlabel('Number of Epochs')
-        # plt.ylabel('Mean Square Error')
         plt.grid()
-        plt.show()
+        # plt.show()
         
-
-    def runet(self):
+    def simulate(self, inLayer):
         """
         pass
         """
 
-        for smp in range(self.inData[0].shape[1]):
-            
+        predClass = np.array(list())
+
+        for smp in range(inLayer.shape[1]):
             # FORWARD DIRECTION
             # Outputs hidden layer
-            H0 = np.dot(self.inLayer[:, smp], self.IW[0]) + self.bias[0]
-            self.hLayer = 1. / (1 + np.exp(-1*H0))
+            H0 = np.dot(inLayer[:, smp], self.IW[0]) + self.bias[0]
+            hLayer = 1. / (1 + np.exp(-1*H0))
 
             # Outputs outlayers
-            out = np.dot(self.hLayer, self.IW[1]) + self.bias[1]
-            self.outLayer = 1. / (1 + np.exp(-1*out))
+            out = np.dot(hLayer, self.IW[1]) + self.bias[1]
+            outLayer = 1. / (1 + np.exp(-1*out))
+            predClass = np.append(predClass, outLayer)
+            # predClass.append(outLayer)
 
-if __name__ == "__main__":
+        return predClass
 
+def runSLP():
+    
     print("\n")
     print("### A simple SLP implementation ###")
     print("  ### Single Layer Perceptron ###\n")
 
-    n_in, n_n, n_out, coef = 4, 5, 1, 0.5
+    n_in, n_out, n_n, coef = 4, 1, 5, 0.5
     
     net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
     net.trainet()
-    # net.runet()
+    pred = net.normalize(np.array([net.simulate(net.dataSet[0][1])]), limits=(1,3))
+    # print(np.round(pred))
+    
+    orig = net.normalize(np.array([net.dataSet[1][1]]), limits=(1,3))
+    # print(orig)
 
-    print(" = MSE: %.3e \n" % net.MSE[-1])
+    plt.figure(2)
+    plt.plot(orig[0], "bo")
+    plt.plot(pred[0], "r*")
+    plt.grid()
+    plt.show()
+
+    # print(" = MSE: %.3e \n" % net.MSE[-1])
+
+if __name__ == "__main__":
+    
+    runSLP()
+    
+    # print("\n")
+    # print("### A simple SLP implementation ###")
+    # print("  ### Single Layer Perceptron ###\n")
+
+    # n_in, n_n, n_out, coef = 4, 5, 1, 0.5
+    
+    # net = slp_BackProp(n_input=n_in, n_neuron=n_n, n_output=n_out, coefLearn=coef)
+    # tnet = net.trainet()
+    # pred = net.runet(net.dataSet[0][1])
+    # print(pred)
+    # print(net.dataSet[1][1])
+
+    # print(" = MSE: %.3e \n" % net.MSE[-1])
