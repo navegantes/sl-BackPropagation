@@ -238,6 +238,8 @@ def runSLP():
     plt.grid()
     plt.show()
 
+    return net
+
 if __name__ == "__main__":
     
-    runSLP()
+    net = runSLP()
