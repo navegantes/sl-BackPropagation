@@ -231,10 +231,13 @@ def runSLP():
     plt.grid()
 
     plt.figure(2)
+    plt.xlabel('Test Set')
+    plt.ylabel('Classes')
     plt.plot(np.zeros(15)+1.5, "b--")
     plt.plot(np.zeros(15)+2.5, "b--")
-    plt.plot(orig[0], "bo")
-    plt.plot(pred[0], "r*")
+    plt.plot(orig[0], "bo", label=u"Original")
+    plt.plot(pred[0], "r*", label=u"Net out")
+    plt.legend(loc='upper left')
     plt.grid()
     plt.show()
 
